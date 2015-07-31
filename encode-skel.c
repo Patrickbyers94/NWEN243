@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 
 /* Program developed for NWEN243, Victoria University of Wellington
    Author: Kris Bubendorfer (c) 2015.
@@ -18,7 +17,7 @@
 
    // test it - this should be the correct result when encoding.
 
-   % cat test | encode "i came, i saw"
+   % cat test | ./encode "i came, i saw"
    key: HJKLNOPQRTUVICAMESWXYZBDFG - 26
    HJKLNOPQRTUVICAMESWXYZBDFG
 
@@ -30,68 +29,98 @@ char upcase(char ch){
   return ch;
 }
 
-bool notduplicate(char val, char *arr, int size){
-  printf("Hello %c \n", val);
+int containsCharacter(char* word, char c){
     int i;
-    for (i=0; i < size; i++) {
-        if (arr[i] == val)
-            return false;
+    for(i = 0; i < strlen(word); i++){
+        if(word[i] == c) return 1;
     }
-    return true;
+    return 0;
 }
 
 char* fixkey(char* s){
-//   printf("Hello %s", s);
   int i, j;
-  char plain[26]; // assume key < length of alphabet*2, local array on stack, will go away!
+  char plain[26]; // assume key < length of alphabet, local array on stack, will go away!
 
   for(i = 0, j = 0; i < strlen(s); i++){
     if(isalpha(s[i])){
       plain[j++] = upcase(s[i]);
     }
   }
-  plain[j] = '\0'; 
+  plain[j] = '\0';
   return strcpy(s, plain);
+}
+
+char* removeDuplicates(char* key){
+    int i, j = 0;
+    char* newKey = (char*)malloc(sizeof(char)*strlen(key));
+    for(i = 0; i < strlen(key); i++){
+        if(containsCharacter(newKey, key[i]) == 0){
+            newKey[j++] = key[i];
+        }
+    }
+   return strcpy(key, newKey);
+}
+
+char nextCharacter(char c){
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    int i;
+    for(i = 0; i < strlen(alphabet); i++){
+        if(alphabet[i] == c) {
+            if(i == 25) return alphabet[0];
+            else return alphabet[i + 1];
+        }
+    }
+}
+
+int getAlphaIndex(char c){
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    int i;
+    for(i = 0; i < strlen(alphabet); i++){
+        if(alphabet[i] == c) {
+            return i;
+        }
+    }
 }
 
 
 void buildtable (char* key, char* encode){
 
   // This function needs to build an array of mappings in the 'encode' array from plaintext characters
-  // to encypered characters.  The encode array will be indexed by the plaintext char.  To 
+  // to encypered characters.  The encode array will be indexed by the plaintext char.  To
   // make this a useful 0-26 index for the array, 'A' will be stubtracted from it (yes you
-  // can do this in C).  You can see this in the main(){} below.  The values in the array 
+  // can do this in C).  You can see this in the main(){} below.  The values in the array
   // will be the cipher value, in the example at the top A -> H, B -> J, etc.
 
   // You are implementing a Caesar 1 & 2 combo Cypher as given in handout.
   // Your code here:
-  char alpha[26] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//   ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-  int i =0;
-  int j =0;
-  char* key1;
-  
+   int offset = strlen(key) - 1;
+   char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   // probably need to declare some stuff here!
-  fixkey(key);
-  int len = strlen(key);// fix the key, i.e., uppercase and remove whitespace and punctuation
-  for(i=0;len;i++){
-    if(notduplicate(key[i],key1,len)){
-      key1[j++]=key[i];
+
+  fixkey(key); // fix the key, i.e., uppercase and remove whitespace and punctuation
+  removeDuplicates(key);
+
+  int i, j = 0;
+  char lastChar = 'a';
+  for(i = offset; j < 26; i++){
+    if(i > 25) i = 0;
+    if(j < strlen(key)) {
+        encode[i] = key[j];
+
     }
+    else{
+        char nextChar =  nextCharacter(lastChar);
+        while(containsCharacter(key, nextChar) == 1){
+          nextChar = nextCharacter(nextChar);
+        }
+        encode[i] = nextChar;
+    }
+    lastChar = encode[i];
+    j++;
   }
-  printf(key1);
-  printf("%d\n", len);
-  for (j = 0;j<len;j++){
-    encode[j]=key[j];
-  }
-   for (i=0;i<26;i++){
-    encode[len+i]=(char)(key[len-1]+i-'A' % 26)+'A';
-  }
-//   fixkey(encode);
-//   printf(encode);
+
   // Do some stuff here to make a translation between plain and cypher maps.
-  
-  
+
 }
 
 int main(int argc, char **argv){
@@ -116,7 +145,7 @@ int main(int argc, char **argv){
 
   fprintf(stderr,"key: %s - %d\n", encode, strlen(encode));
 
-  // the following code does the translations.  Characters are read 
+  // the following code does the translations.  Characters are read
   // one-by-one from stdin, translated and written to stdout.
 
   ch = fgetc(stdin);
@@ -124,9 +153,9 @@ int main(int argc, char **argv){
     if(isalpha(ch)){        // only encrypt alpha chars
       ch = upcase(ch);      // make it uppercase
       fputc(encode[ch-'A'], stdout);
-    }else 
+    }else
       fputc(ch, stdout);
     ch = fgetc(stdin);      // get next char from stdin
   }
 }
-  
+
