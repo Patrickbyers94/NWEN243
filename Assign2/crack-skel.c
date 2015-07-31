@@ -45,12 +45,13 @@ char upcase(char ch){
 
 char extract(char* text, int division, int split ){
 char* slice = (char*)malloc(sizeof(char)*TEXT_SIZE+1);
-int j=o;
+int j=0;
 for (int i=split;i<strlen(text);i=i+division){
 slice[j] = text[i];
 j++;
 }
-return slice;
+slice[j] = '\0';
+return strcpy(text, slice);
 }
 
 int main(int argc, char **argv){
@@ -94,8 +95,11 @@ int main(int argc, char **argv){
    * getting too long, double check you're on the right track.
    *
    */
-  for(i =0, i<=n;i++){
   
+  for(i =1; i<=n;i++){
+  for (int j =1;j<=1;j++){
+	printf("%s, n=%d, slice=%d", extract(text, i, j), i, j);  
+  }
   }
 
 }
