@@ -7,12 +7,13 @@
 #define CHFREQ "ETAONRISHDLFCMUGYPWBVKJXQZ" // Characters in order of appearance in English documents.
 #define ALPHABET "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+/*TODO remove newline Characters */ 
 /* Program developed for NWEN243, Victoria University of Wellington
    Author: Kris Bubendorfer, this extended version (c) 2015
    LAB: 2
 
    This program applies a basic frequency analysis on a cyphertext.  It has been extened over the 2014 version to
-   solve polyalphabetic cyphers - by brute force.  In this case, it applies the frequency analysis for different 
+   solve polyalphabetic cyphers - by brute force.  In this case, it applies the frequency analysis for different
    numbers of n keys (polyalphabetic Caeser).  Obviously it will need a cypher of about n times
    the typical length for a monoalphabetic cypher.
 
@@ -38,20 +39,33 @@
  */
 
 char upcase(char ch){
+  if(ch!='\n'){
   if(islower(ch))
     ch -= 'a' - 'A';
   return ch;
 }
+else{return '\0';}
+}
 
-char extract(char* text, int division, int split ){
-char* slice = (char*)malloc(sizeof(char)*TEXT_SIZE+1);
+char* extract(char* text, int division, int split ){
+char* slice = (char*)malloc(sizeof(char)*strlen(text));
 int j=0;
-for (int i=split;i<strlen(text);i=i+division){
-slice[j] = text[i];
-j++;
+int i;
+for (i=split-1; i<strlen(text); i=i+division){
+slice[j++] = text[i];
 }
 slice[j] = '\0';
 return strcpy(text, slice);
+}
+
+int getAlphaIndex(char c){
+    char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    int i;
+    for(i = 0; i < strlen(alphabet); i++){
+        if(alphabet[i] == c) {
+            return i;
+        }
+    }
 }
 
 int main(int argc, char **argv){
@@ -59,11 +73,12 @@ int main(int argc, char **argv){
   // first allocate some space for our input text (we will read from stdin).
 
   char* text = (char*)malloc(sizeof(char)*TEXT_SIZE+1);
+  char* orig = (char*)malloc(sizeof(char)*TEXT_SIZE+1);
   char ch;
   int n, i;
 
   if(argc > 1 && (n = atoi(argv[1])) > 0); else{ fprintf(stderr,"Malformed argument, use: crack [n], n > 0\n"); exit(-1);} // get the command line argument n
-  
+
   // Now read TEXT_SIZE or feof worth of characters (whichever is smaller) and convert to uppercase as we do it.
   // Added: changed to count frequencies as we read it in
 
@@ -79,10 +94,10 @@ int main(int argc, char **argv){
    * What you need to do is as follows:
    *   1. create a for-loop that will check key lengths from 1..n
    *   2. for each i <= n, spit the cypher text into i sub-texts.  For i = 1, 1 subtext, for i = 2, 2 subtexts, of alternating characters etc.
-   *   3. for each subtext: 
-   *          a. count the occurance of each letter 
+   *   3. for each subtext:
+   *          a. count the occurance of each letter
    *          b. then map this onto the CHFREQ, to create a map between the sub-text and english
-   *          c. apply the new map to the subtext 
+   *          c. apply the new map to the subtext
    *   4. merge the subtexts
    *   5. output the 'possibly' partially decoded text to stdout.  This will only look OK if i was the correct number of keys
    *
@@ -95,10 +110,11 @@ int main(int argc, char **argv){
    * getting too long, double check you're on the right track.
    *
    */
-  
+  strcpy(orig,text);
   for(i =1; i<=n;i++){
-  for (int j =1;j<=1;j++){
-	printf("%s, n=%d, slice=%d", extract(text, i, j), i, j);  
+  for (int j =1;j<=i;j++){
+    strcpy(text,orig);
+	printf("%s, n=%d, slices=%d \n", extract(text, i, j), j, i);
   }
   }
 
