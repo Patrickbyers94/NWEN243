@@ -1,0 +1,13 @@
+1.)It will usually take a long time to detect a socket communication party is not reachable as we must wait 
+for the timeout before we can say a connection is unreachable, and this is usually if not always a fairly 
+long period of time.
+
+2.)No, as you cannot affect the servers buffer in that way you can only write something, and the server must
+read it, there is no way to make the server do anything with its buffer it would not usually do.
+
+3.)
+
+4.)
+
+5.)No the client will not receive the correct integer, although the client will receive the correct integer in 64
+bit, as the client stores integers in 32 bit the integer being sent may not be the integer sent.
